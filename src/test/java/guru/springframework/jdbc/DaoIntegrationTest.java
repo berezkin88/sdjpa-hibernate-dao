@@ -130,7 +130,10 @@ public class DaoIntegrationTest {
         author.setLastName("Thompson");
         Author saved = authorDao.saveNewAuthor(author);
 
-        assertThat(saved).isNotNull();
+        assertThat(saved)
+            .isNotNull()
+            .extracting(Author::getId)
+            .isNotNull();
     }
 
     @Test
