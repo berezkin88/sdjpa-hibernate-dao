@@ -21,6 +21,19 @@ public class AuthorDaoImpl implements AuthorDao {
     }
 
     @Override
+    public List<Author> findAll() {
+        var entityManager = getEntityManager();
+
+        try {
+            var typedQuery = entityManager.createNamedQuery("author_find_all", Author.class);
+
+            return typedQuery.getResultList();
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public List<Author> listAuthorByLastNameLike(String lastName) {
         var entityManager = getEntityManager();
