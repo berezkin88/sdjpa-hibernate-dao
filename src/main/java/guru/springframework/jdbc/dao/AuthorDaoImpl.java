@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
+import java.util.List;
 
 /**
  * Created by jt on 8/28/21.
@@ -17,6 +18,21 @@ public class AuthorDaoImpl implements AuthorDao {
 
     public AuthorDaoImpl(EntityManagerFactory entityManagerFactory) {
         this.entityManagerFactory = entityManagerFactory;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Author> listAuthorByLastNameLike(String lastName) {
+        var entityManager = getEntityManager();
+
+        try {
+            var query = entityManager.createQuery("select a from Author a where a.lastName like :last_name");
+            query.setParameter("last_name", lastName + "%");
+
+            return query.getResultList();
+        } finally {
+            entityManager.close();
+        }
     }
 
     @Override
