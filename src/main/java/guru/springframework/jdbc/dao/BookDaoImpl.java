@@ -1,12 +1,11 @@
 package guru.springframework.jdbc.dao;
 
-import guru.springframework.jdbc.domain.Author;
 import guru.springframework.jdbc.domain.Book;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import java.util.List;
 
 @Repository
 public class BookDaoImpl implements BookDao {
@@ -15,6 +14,19 @@ public class BookDaoImpl implements BookDao {
 
     public BookDaoImpl(EntityManagerFactory entityManagerFactory) {
         this.entityManagerFactory = entityManagerFactory;
+    }
+
+    @Override
+    public List<Book> findAll() {
+        var entityManager = getEntityManager();
+
+        try {
+            var query = entityManager.createNamedQuery("find_all_books", Book.class);
+
+            return query.getResultList();
+        } finally {
+            entityManager.close();
+        }
     }
 
     @Override
@@ -33,16 +45,27 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public Book getById(Long id) {
-        return getEntityManager().find(Book.class, id);
+        var entityManager = getEntityManager();
+
+        try {
+            return getEntityManager().find(Book.class, id);
+        } finally {
+            entityManager.close();
+        }
     }
 
     @Override
     public Book findBookByTitle(String title) {
-        var query = getEntityManager().createQuery("select b from Book b " +
-            "where b.title = :title", Book.class);
-        query.setParameter("title", title);
+        var entityManager = getEntityManager();
 
-        return query.getSingleResult();
+        try {
+            var query = entityManager.createNamedQuery("find_book_by_title", Book.class);
+            query.setParameter("title", title);
+
+            return query.getSingleResult();
+        } finally {
+            entityManager.close();
+        }
     }
 
     @Override
@@ -54,6 +77,7 @@ public class BookDaoImpl implements BookDao {
         entityManager.flush();
         entityManager.getTransaction().commit();
 
+        entityManager.close();
         return book;
     }
 
@@ -65,6 +89,8 @@ public class BookDaoImpl implements BookDao {
         entityManager.merge(book);
         entityManager.flush();
         entityManager.getTransaction().commit();
+
+        entityManager.close();
     }
 
     @Override
@@ -76,6 +102,8 @@ public class BookDaoImpl implements BookDao {
         entityManager.remove(book);
         entityManager.flush();
         entityManager.getTransaction().commit();
+
+        entityManager.close();
     }
 
     private EntityManager getEntityManager() {

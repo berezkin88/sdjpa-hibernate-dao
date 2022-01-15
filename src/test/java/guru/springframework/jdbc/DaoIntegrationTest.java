@@ -33,6 +33,16 @@ class DaoIntegrationTest {
     BookDao bookDao;
 
     @Test
+    void findAllBooks() {
+        var listOfBooks = bookDao.findAll();
+
+        assertThat(listOfBooks)
+            .isNotNull()
+            .extracting(List::size)
+            .matches(size -> size > 0);
+    }
+
+    @Test
     void findAllAuthors() {
         var listOfAuthors = authorDao.findAll();
 

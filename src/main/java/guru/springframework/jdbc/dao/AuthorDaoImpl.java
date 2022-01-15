@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.TypedQuery;
 import java.util.List;
 
 /**
@@ -50,19 +49,29 @@ public class AuthorDaoImpl implements AuthorDao {
 
     @Override
     public Author getById(Long id) {
-        return getEntityManager().find(Author.class, id);
+        var entityManager = getEntityManager();
+
+        try {
+            return getEntityManager().find(Author.class, id);
+        } finally {
+            entityManager.close();
+        }
     }
 
     @Override
     public Author findAuthorByName(String firstName, String lastName) {
         var entityManager = getEntityManager();
-        var typedQuery = entityManager.createNamedQuery("find_by_name", Author.class);
 
-        typedQuery.setParameter("first_name", firstName);
-        typedQuery.setParameter("last_name", lastName);
+        try {
+            var typedQuery = entityManager.createNamedQuery("find_by_name", Author.class);
 
-        entityManager.close();
-        return typedQuery.getSingleResult();
+            typedQuery.setParameter("first_name", firstName);
+            typedQuery.setParameter("last_name", lastName);
+
+            return typedQuery.getSingleResult();
+        } finally {
+            entityManager.close();
+        }
     }
 
     @Override
@@ -74,6 +83,7 @@ public class AuthorDaoImpl implements AuthorDao {
         entityManager.flush();
         entityManager.getTransaction().commit();
 
+        entityManager.close();
         return author;
     }
 
@@ -86,7 +96,10 @@ public class AuthorDaoImpl implements AuthorDao {
         entityManager.flush();
         entityManager.clear();
 
-        return entityManager.find(Author.class, author.getId());
+        var updatedAuthor = entityManager.find(Author.class, author.getId());
+
+        entityManager.close();
+        return updatedAuthor;
     }
 
     @Override
@@ -98,6 +111,8 @@ public class AuthorDaoImpl implements AuthorDao {
         entityManager.remove(author);
         entityManager.flush();
         entityManager.getTransaction().commit();
+
+        entityManager.close();
     }
 
     private EntityManager getEntityManager() {
