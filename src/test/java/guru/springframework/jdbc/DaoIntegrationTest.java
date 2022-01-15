@@ -33,6 +33,13 @@ class DaoIntegrationTest {
     BookDao bookDao;
 
     @Test
+    void getAuthorByNameCriteria() {
+        var author = authorDao.findAuthorByNameCriteria("Craig", "Walls");
+
+        assertThat(author).isNotNull();
+    }
+
+    @Test
     void findAllBooks() {
         var listOfBooks = bookDao.findAll();
 

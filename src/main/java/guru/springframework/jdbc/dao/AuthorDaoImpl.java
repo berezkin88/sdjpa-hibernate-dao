@@ -20,6 +20,35 @@ public class AuthorDaoImpl implements AuthorDao {
     }
 
     @Override
+    public Author findAuthorByNameCriteria(String firstName, String lastName) {
+        var entityManager = getEntityManager();
+
+        try {
+            var criteriaBuilder = entityManager.getCriteriaBuilder();
+            var criteriaQuery = criteriaBuilder.createQuery(Author.class);
+
+            var root = criteriaQuery.from(Author.class);
+
+            var firstNameExpressionParameter = criteriaBuilder.parameter(String.class);
+            var lastNameExpressionParameter = criteriaBuilder.parameter(String.class);
+
+            var firstNamePredicate = criteriaBuilder.equal(root.get("firstName"), firstNameExpressionParameter);
+            var lastNamePredicate = criteriaBuilder.equal(root.get("lastName"), lastNameExpressionParameter);
+
+            criteriaQuery.select(root).where(criteriaBuilder.and(firstNamePredicate, lastNamePredicate));
+
+            var typedQuery = entityManager.createQuery(criteriaQuery);
+            typedQuery.setParameter(firstNameExpressionParameter, firstName);
+            typedQuery.setParameter(lastNameExpressionParameter, lastName);
+
+            return typedQuery.getSingleResult();
+        } finally {
+            entityManager.close();
+        }
+
+    }
+
+    @Override
     public List<Author> findAll() {
         var entityManager = getEntityManager();
 
