@@ -1,5 +1,6 @@
 package guru.springframework.jdbc.dao;
 
+import guru.springframework.jdbc.domain.Author;
 import guru.springframework.jdbc.domain.Book;
 import org.springframework.stereotype.Repository;
 
@@ -63,6 +64,31 @@ public class BookDaoImpl implements BookDao {
             query.setParameter("title", title);
 
             return query.getSingleResult();
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public Book findBookByTitleCriteria(String title) {
+        var entityManager = getEntityManager();
+
+        try {
+            var criteriaBuilder = entityManager.getCriteriaBuilder();
+            var criteriaQuery = criteriaBuilder.createQuery(Book.class);
+
+            var root = criteriaQuery.from(Book.class);
+
+            var titleExpressionParameter = criteriaBuilder.parameter(String.class);
+
+            var titlePredicate = criteriaBuilder.equal(root.get("title"), titleExpressionParameter);
+
+            criteriaQuery.select(root).where(titlePredicate);
+
+            var typedQuery = entityManager.createQuery(criteriaQuery);
+            typedQuery.setParameter(titleExpressionParameter, title);
+
+            return typedQuery.getSingleResult();
         } finally {
             entityManager.close();
         }
