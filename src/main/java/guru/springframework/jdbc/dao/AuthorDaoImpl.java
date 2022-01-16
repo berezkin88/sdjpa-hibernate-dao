@@ -45,7 +45,6 @@ public class AuthorDaoImpl implements AuthorDao {
         } finally {
             entityManager.close();
         }
-
     }
 
     @Override
@@ -98,6 +97,23 @@ public class AuthorDaoImpl implements AuthorDao {
             typedQuery.setParameter("last_name", lastName);
 
             return typedQuery.getSingleResult();
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public Author findAuthorByNameNative(String firstName, String lastName) {
+        var entityManager = getEntityManager();
+
+        try {
+            var query = entityManager.createNativeQuery("SELECT * FROM author a where a.first_name = ? " +
+                "and a.last_name = ?", Author.class);
+
+            query.setParameter(1, firstName);
+            query.setParameter(2, lastName);
+
+            return (Author) query.getSingleResult();
         } finally {
             entityManager.close();
         }
